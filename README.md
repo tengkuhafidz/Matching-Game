@@ -21,5 +21,7 @@ This game was built for an assignment of Udacity Frontend Nanodegree course.
 
 - Started the project with [Udacity's template](https://github.com/udacity/fend-project-memory-game)
 - Used [SweetAlert](https://sweetalert.js.org/guides/) for modal
+- Used [Font Awesome](https://fontawesome.com/) for icons
+
 
 

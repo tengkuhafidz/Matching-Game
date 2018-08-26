@@ -18,12 +18,14 @@ const timer = document.getElementById('timer');
 
 const openedCardsId = [];
 const lockedCardsId = [];
+let hasStarted = false;
 let moveCount = 0; 
-const THREE_STARS_MARK = 25;
-const TWO_STARS_MARK = 35;
-const ONE_STAR_MARK = 45;
 let timerInSeconds = 0;
 let timerInterval;
+const THREE_STARS_MARK = 15;
+const TWO_STARS_MARK = 25;
+// const ONE_STAR_MARK = 35;
+let ratings = 3;
 
 
 renderCards();
@@ -82,15 +84,17 @@ function shuffle(array) {
  */
 
 deck.addEventListener('click', function(evt) {
-	if(moveCount === 0) renderTimer();
+	if(evt.target.id && evt.target.id !== 'deck' && !openedCardsId.includes(evt.target.id)) {
+		if(!hasStarted) renderTimer();
 
-	if(openedCardsId.length < 2) {
-		moveCount++;
-		openCard(evt);
-		addCardToOpenedCardsArr(evt);
-		if (openedCardsId.length == 2) checkMatch(evt);
-		renderMoveCounter();
-		updateStars();
+		if(openedCardsId.length < 2) {
+			hasStarted = true;
+			openCard(evt);
+			addCardToOpenedCardsArr(evt);
+			if (openedCardsId.length == 2) checkMatch(evt);
+			renderMoveCounter();
+			updateStars();
+		}
 	}
 });
 
@@ -106,6 +110,7 @@ function addCardToOpenedCardsArr(evt) {
 
 // check if cards chosen matches and determine action
 function checkMatch(evt) {
+	moveCount++;
 	const card1 = document.getElementById(openedCardsId[0]);
 	const card2 = document.getElementById(openedCardsId[1]);
 
@@ -123,8 +128,6 @@ function lockCards(card1, card2) {
 	lockedCardsId.push(openedCardsId[1]);
 	card1.classList.add('match')
 	card2.classList.add('match')
-	console.log('lockCards 2', openedCardsId)
-
 	if (lockedCardsId.length === uniqueCards.length * 2) hasCompleted();
 }
 
@@ -145,7 +148,7 @@ function hasCompleted() {
 	//completion modal
 	swal({
 	  title: "Good job!",
-	  text: "You completed the game with " + moveCount + " moves in " + timerInSeconds + " seconds.",
+	  content: generateSwalRemarks(),	  
 	  icon: "success",
 	  button: "Restart!",
 	}).then((value) => {
@@ -157,7 +160,38 @@ restart.addEventListener('click', function(evt) {
 	restartGame();
 });
 
+// generate star element for sweet alert 
+function generateSwalRemarks() {
+	const starDiv = document.createElement('div');
+
+	// make filled stars (actual stars)
+	for(let i = 0; i < ratings; i++) {
+		const star = document.createElement('i');
+		star.className = 'fa fa-star fa-lg';
+		star.style.fontSize = '3em';
+		starDiv.appendChild(star);
+	}
+
+	// make hollow stars
+	for(let i = 0; i < 3 - ratings; i++) {
+		const star = document.createElement('i');
+		star.className = 'fa fa-star-o fa-lg';
+		star.style.fontSize = '3em';
+		starDiv.appendChild(star);
+	}
+
+	//textual remarks
+	const remarks = "You completed the game with " + moveCount + " moves in " + timerInSeconds + " seconds.";
+	const para = document.createElement('p');
+	para.textContent = remarks;
+	starDiv.appendChild(para);
+
+	return starDiv;
+}
+
 function restartGame() {
+	ratings = 3;
+	hasStarted = false;
 	timerInSeconds = 0;
 	timer.innerHTML = 0;
 	moveCount = 0;
@@ -186,10 +220,10 @@ function renderMoveCounter() {
 function updateStars() {
 	if (moveCount > THREE_STARS_MARK && moveCount <= TWO_STARS_MARK) {
 		document.getElementById('star_three').className = 'fa fa-star-o';
-	} else if (moveCount > TWO_STARS_MARK && moveCount <= ONE_STAR_MARK) {
+		ratings = 2;
+	} else if (moveCount > TWO_STARS_MARK) {
 		document.getElementById('star_two').className = 'fa fa-star-o';
-	} else if( moveCount > ONE_STAR_MARK) {
-		document.getElementById('star_one').className = 'fa fa-star-o';
+		ratings = 1;
 	}
 }
 
